@@ -3,6 +3,7 @@
 #include <math.h>
 #include <iostream>
 #include <string.h>
+#include <cassert>
 #include <map>
 #include <sstream>
 #include <vector>
@@ -41,7 +42,7 @@ struct P {
   double xd;
   double yd;
 
-  P(ll y = 0, ll x = 0) {
+  P(ll x = 0, ll y = 0) {
     this->y = y;
     this->x = x;
     this->xd = x / 2.0 / f;
@@ -70,8 +71,12 @@ bool boundBoxIntersect(ll a, ll b, ll c, ll d) {
 }
 
 ll orientedAreaSign(P a, P b, P c) {
-  int area = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+  ll area = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
   return area == 0 ? 0 : area / abs(area);
+}
+
+int getCoord(int c) {
+  return (c + 0.5) * f * 2;
 }
 
 struct Wall {
@@ -93,11 +98,10 @@ struct Wall {
 
 ll g_LightDistance;
 ll g_LightCount;
-ll g_width;
-ll g_height;
-int S;
+ll S;
 vector<Wall> g_walls;
 vector<P> g_lights;
+vector<string> g_map;
 
 class Lighting {
   public:
@@ -121,6 +125,24 @@ class Lighting {
           g_walls.push_back(w);
         }
       }
+
+      for (int j = 0; j < S-1; j++) {
+        int i = 0;
+        while (i < S) {
+          if (map[i][j] == map[i][j+1]) {
+            i++;
+            continue;
+          }
+
+          P start((j+1)*2*f, i*2*f);
+          while (i < S && map[i][j] != map[i][j+1]) {
+            i++;
+          }
+          P end((j+1)*2*f, i*2*f);
+          Wall w(start, end);
+          g_walls.push_back(w);
+        }
+      }
     }
 
     vector<string> setLights(vector<string> map, int D, int L) {
@@ -128,24 +150,52 @@ class Lighting {
       vector<P> points;
       g_LightDistance = D;
       g_LightCount = L;
+      g_map = map;
       S = map.size();
-      g_height = map.size();
-      g_width = map[0].size();
+      g_lights = vector<P>(L);
 
       extractWalls(map);
 
       srand(123);
-      int S = map.size();
       for (int i = 0; i < L; ++i) {
-        P p(rand() % S, rand() % 5);
-        ret.push_back(p.to_s());
-        //ret.push_back(to_string(rand() % S) + "." + to_string(rand() % 90 +10) + " " + to_string(rand() % S) + "." + to_string(rand() % 90 +10));
+        int x = rand() % S;
+        int y = rand() % S;
+        P p(getCoord(x), getCoord(y));
+        g_lights[i] = p;
+        P pp(x,y);
+        ret.push_back(pp.to_s());
       }
+
+      double score = calcScore();
+      fprintf(stderr,"score = %f\n", score);
+
       return ret;
     }
 
-    double calcScore(vector<string> map) {
-      vector<vector<int> > points(S, vector<int>(S, 0));
+    vector<string> lights2answer() {
+      vector<string> ret;
+
+      for (P p : g_lights) {
+        ret.push_back(p.to_s());
+      }
+
+      return ret;
+    }
+
+    double calcScore() {
+      vector<vector<int> > points(S*f, vector<int>(S*f, 0));
+
+      for (int r = 0; r < S; r++) {
+        for (int c = 0; c < S; c++) {
+          if (g_map[r][c] != '#') continue;
+
+          for (int x = c*f; x < (c+1)*f; x++) {
+            for (int y = r*f; y < (r+1)*f; y++) {
+              points[y][x] = -1;
+            }
+          }
+        }
+      }
 
       for (int i = 0; i < g_LightCount; i++) {
         markPointsIlluminated(i, points);
@@ -156,7 +206,7 @@ class Lighting {
 
       for (int r = 0; r < S; r++) {
         for (int c = 0; c < S; c++) {
-          if (map[r][c] == '#') continue;
+          if (g_map[r][c] == '#') continue;
 
           for (int x = 0; x < f; x++) {
             for (int y = 0; y < f; y++) {
@@ -169,16 +219,17 @@ class Lighting {
         }
       }
 
+      fprintf(stderr,"(%d/%d)\n", nIllum, nTotal);
       return nIllum * 1.0 / nTotal;
     }
 
     void markPointsIlluminated(int lightInd, vector<vector<int> > &points) {
       P light = g_lights[lightInd];
 
-      int boxX1 = max(0LL, light.x - g_LightDistance);
-      int boxX2 = min(g_width-1, light.x + g_LightDistance);
-      int boxY1 = max(0LL, light.y - g_LightDistance);
-      int boxY2 = min(g_height-1, light.y + g_LightDistance);
+      ll boxX1 = max(0LL, light.x - 2*f*g_LightDistance);
+      ll boxX2 = min(2*(f*S-1), light.x + 2*f*g_LightDistance);
+      ll boxY1 = max(0LL, light.y - 2*f*g_LightDistance);
+      ll boxY2 = min(2*(f*S-1), light.y + 2*f*g_LightDistance);
 
       vector<int> localWallsInd;
       for (int i = 0; i < g_walls.size(); i++) {
@@ -222,9 +273,9 @@ template<class T> void getVector(vector<T>& v) {
 int main() {
   MAX_TIME = 2.0;
   Lighting l;
-  int S;
-  cin >> S;
-  vector<string> map(S);
+  int s;
+  cin >> s;
+  vector<string> map(s);
   getVector(map);
 
   int D;
@@ -235,7 +286,9 @@ int main() {
 
   vector<string> ret = l.setLights(map, D, maxL);
   cout << ret.size() << endl;
-  for (int i = 0; i < (int)ret.size(); ++i)
+  for (int i = 0; i < (int)ret.size(); ++i) {
+    cerr << ret[i] << endl;
     cout << ret[i] << endl;
+  }
   cout.flush();
 }
