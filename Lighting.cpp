@@ -8,6 +8,28 @@
 #include <string>
 
 using namespace std;
+typedef long long ll;
+
+const ll CYCLE_PER_SEC = 2400000000;
+const int SCALE = 1;
+double MAX_TIME = 20.0;
+
+unsigned long long xor128(){
+  static unsigned long long rx=123456789, ry=362436069, rz=521288629, rw=88675123;
+  unsigned long long rt = (rx ^ (rx<<11));
+  rx=ry; ry=rz; rz=rw;
+  return (rw=(rw^(rw>>19))^(rt^(rt>>8)));
+}
+
+unsigned long long int getCycle() {
+  unsigned int low, high;
+  __asm__ volatile ("rdtsc" : "=a" (low), "=d" (high));
+  return ((unsigned long long int)low) | ((unsigned long long int)high << 32);
+}
+
+double getTime(unsigned long long int begin_cycle) {
+  return (double)(getCycle() - begin_cycle) / CYCLE_PER_SEC;
+}
 
 struct Point {
   int y;
@@ -23,11 +45,19 @@ struct Point {
   }
 };
 
+int g_LightDistance;
+int g_width;
+int g_height;
+
 class Lighting {
   public:
     vector<string> setLights(vector<string> map, int D, int L) {
       vector<string> ret;
       vector<Point> points;
+
+      g_LightDistance = D * SCALE;
+      g_height = map.size();
+      g_width = map[0].size();
 
       srand(123);
       int S = map.size();
@@ -37,6 +67,15 @@ class Lighting {
         //ret.push_back(to_string(rand() % S) + "." + to_string(rand() % 90 +10) + " " + to_string(rand() % S) + "." + to_string(rand() % 90 +10));
       }
       return ret;
+    }
+
+    void markPointsIlluminated(Point p) {
+      int boxX1 = max(0, p.x - g_LightDistance);
+      int boxX2 = min(g_width-1, p.x + g_LightDistance);
+      int boxY1 = max(0, p.y - g_LightDistance);
+      int boxY2 = min(g_height-1, p.y + g_LightDistance);
+
+      vector<int> localWallsInd;
     }
 };
 
@@ -48,6 +87,7 @@ template<class T> void getVector(vector<T>& v) {
 }
 
 int main() {
+  MAX_TIME = 2.0;
   Lighting l;
   int S;
   cin >> S;

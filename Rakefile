@@ -6,12 +6,12 @@ SEED = 1
 
 desc 'c++ file compile'
 task :default do
-  system("g++ -std=c++11 -W -Wall -Wno-sign-compare -O2 -o #{PROBLEM_NAME} #{PROBLEM_NAME}.cpp")
+  system("g++ -std=c++11 -D__NO_INLINE__ -W -Wall -Wno-sign-compare -O2 -o #{PROBLEM_NAME} #{PROBLEM_NAME}.cpp")
 end
 
 desc 'c++ file compile'
 task :compile do
-  system("g++ -std=c++11 -W -Wall -Wno-sign-compare -O2 -o #{PROBLEM_NAME} #{PROBLEM_NAME}.cpp")
+  system("g++ -std=c++11 -D__NO_INLINE__ -W -Wall -Wno-sign-compare -O2 -o #{PROBLEM_NAME} #{PROBLEM_NAME}.cpp")
 end
 
 desc 'exec and view result'
