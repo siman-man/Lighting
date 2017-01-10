@@ -49,3 +49,9 @@ written in fixed-point notation with exactly two digits after decimal point.
 
 * The value of D will be between 2 and 10, inclusive.
 ライトの光源の強さは2 - 10です
+
+
+## 戦略
+
+ライトを設置したときにどれだけ周囲を照らせるかを計算し、それを焼きなましでライト位置を修正していく。
+課題としてはライトを設置したときの周囲をどれだけ照らすことが出来るかを確認する、シミュレーション部分をいかに高速で精度高く計算できるか。
