@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string.h>
 #include <cassert>
-#include <map>
+#include <unordered_map>
 #include <sstream>
 #include <iomanip>
 #include <vector>
@@ -121,6 +121,7 @@ ll startCycle;
 vector<Wall> g_walls;
 vector<vector<int> > g_points;
 vector<P> g_lights;
+unordered_map<int, vector<Coord> > g_lightMemo;
 vector<string> g_map;
 
 class Lighting {
@@ -209,7 +210,7 @@ class Lighting {
         markPointsIlluminated(i);
       }
 
-      replaceLights();
+      vector<P> ans = replaceLights();
 
       for (int i = 0; i < L; ++i) {
         ret.push_back(g_lights[i].to_s());
@@ -240,34 +241,61 @@ class Lighting {
       return P(getCoord(x), getCoord(y));
     }
 
-    void replaceLights() {
+    vector<P> replaceLights() {
+      vector<P> bestLights = g_lights;
+      vector<P> goodLights = g_lights;
+      vector<vector<int> > bestTemp = g_points;
+      vector<vector<int> > goodTemp = g_points;
       double bestScore = calcScore();
+      double goodScore = bestScore;
       double score = 0.0;
       ll tryCount = 0;
       vector<vector<int> > temp = g_points;
 
-      while (true) {
+      double currentTime = getTime(startCycle);
+      double alpha = 0.9999;
+      double T = 10000.0;
+      double k = 0.01;
+      int R = 100000;
+
+      while (currentTime < TIME_LIMIT) {
+        double remainTime = TIME_LIMIT - currentTime;
         int lightInd = xor128()%g_LightCount;
         P light = g_lights[lightInd];
 
         relocationLight(lightInd);
 
         score = calcScore();
+        double diffScore = goodScore - score;
 
         if (bestScore < score) {
-          temp = g_points;
           bestScore = score;
+          bestTemp = g_points;
+          bestLights = g_lights;
+        }
+
+        if (goodScore < score || (false && xor128()%R < R*exp(-diffScore/(k*remainTime)))) {
+          goodScore = score;
+          goodTemp = g_points;
+          goodLights = g_lights;
         } else {
-          g_points = temp;
+          g_points = goodTemp;
           g_lights[lightInd] = light;
         }
 
         tryCount++;
+        T *= alpha;
 
-        if (TIME_LIMIT < getTime(startCycle)) break;
+        if (tryCount % 10000 == 0) {
+          fprintf(stderr,"rate = %f, remainTime = %4.2f\n", exp(-0.1/(k*remainTime)), remainTime);
+        }
+
+        currentTime = getTime(startCycle);
       }
 
       cerr << "tryCount = " << tryCount << endl;
+
+      return bestLights;
     }
 
     void relocationLight(int lightInd) {
@@ -301,7 +329,29 @@ class Lighting {
     }
 
     int markPointsIlluminated(int lightInd, bool swt = ON) {
+      vector<Coord> coords = getMarkPoints(lightInd);
+
+      int lightingCount = 0;
+
+      for (int i = 0; i < coords.size(); i++) {
+        Coord coord = coords[i];
+
+        if (swt) {
+          if (g_points[coord.y][coord.x] == 0) lightingCount++;
+          g_points[coord.y][coord.x] |= (1 << lightInd);
+        } else {
+          g_points[coord.y][coord.x] ^= (1 << lightInd);
+          if (g_points[coord.y][coord.x] == 0) lightingCount++;
+        }
+      }
+
+      return lightingCount;
+    }
+
+    vector<Coord> getMarkPoints(int lightInd) {
       P light = g_lights[lightInd];
+
+      if (g_lightMemo.count(light.hashCode())) return g_lightMemo[light.hashCode()];
 
       int boxX1 = max(0, light.x - 2*SCALE*g_LightDistance);
       int boxX2 = min(2*(SCALE*S-1), light.x + 2*SCALE*g_LightDistance);
@@ -317,7 +367,7 @@ class Lighting {
             }
       }
 
-      int lightingCount = 0;
+      vector<Coord> coords;
 
       for (int x = boxX1 / 2; x <= boxX2 / 2; x++) {
         for (int y = boxY1 / 2; y <= boxY2 / 2; y++) {
@@ -334,18 +384,14 @@ class Lighting {
           }
           if (ok) {
             assert(g_points[y][x] != WALL);
-            if (swt) {
-              if (g_points[y][x] == 0) lightingCount++;
-              g_points[y][x] |= (1 << lightInd);
-            } else {
-              g_points[y][x] ^= (1 << lightInd);
-              if (g_points[y][x] == 0) lightingCount++;
-            }
+            coords.push_back(Coord(y,x));
           }
         }
       }
 
-      return lightingCount;
+      g_lightMemo[light.hashCode()] = coords;
+
+      return coords;
     }
 };
 
