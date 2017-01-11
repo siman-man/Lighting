@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string.h>
 #include <cassert>
-#include <map>
+#include <unordered_map>
 #include <sstream>
 #include <iomanip>
 #include <vector>
@@ -121,6 +121,7 @@ ll startCycle;
 vector<Wall> g_walls;
 vector<vector<int> > g_points;
 vector<P> g_lights;
+unordered_map<int, vector<Coord> > g_lightMemo;
 vector<string> g_map;
 
 class Lighting {
@@ -301,7 +302,29 @@ class Lighting {
     }
 
     int markPointsIlluminated(int lightInd, bool swt = ON) {
+      vector<Coord> coords = getMarkPoints(lightInd);
+
+      int lightingCount = 0;
+
+      for (int i = 0; i < coords.size(); i++) {
+        Coord coord = coords[i];
+
+        if (swt) {
+          if (g_points[coord.y][coord.x] == 0) lightingCount++;
+          g_points[coord.y][coord.x] |= (1 << lightInd);
+        } else {
+          g_points[coord.y][coord.x] ^= (1 << lightInd);
+          if (g_points[coord.y][coord.x] == 0) lightingCount++;
+        }
+      }
+
+      return lightingCount;
+    }
+
+    vector<Coord> getMarkPoints(int lightInd) {
       P light = g_lights[lightInd];
+
+      if (g_lightMemo.count(light.hashCode())) return g_lightMemo[light.hashCode()];
 
       int boxX1 = max(0, light.x - 2*SCALE*g_LightDistance);
       int boxX2 = min(2*(SCALE*S-1), light.x + 2*SCALE*g_LightDistance);
@@ -317,7 +340,7 @@ class Lighting {
             }
       }
 
-      int lightingCount = 0;
+      vector<Coord> coords;
 
       for (int x = boxX1 / 2; x <= boxX2 / 2; x++) {
         for (int y = boxY1 / 2; y <= boxY2 / 2; y++) {
@@ -334,18 +357,14 @@ class Lighting {
           }
           if (ok) {
             assert(g_points[y][x] != WALL);
-            if (swt) {
-              if (g_points[y][x] == 0) lightingCount++;
-              g_points[y][x] |= (1 << lightInd);
-            } else {
-              g_points[y][x] ^= (1 << lightInd);
-              if (g_points[y][x] == 0) lightingCount++;
-            }
+            coords.push_back(Coord(y,x));
           }
         }
       }
 
-      return lightingCount;
+      g_lightMemo[light.hashCode()] = coords;
+
+      return coords;
     }
 };
 
