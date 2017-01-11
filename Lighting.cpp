@@ -19,7 +19,7 @@ const int WALL = -1;
 const bool ON = true;
 const bool OFF = false;
 const double eps = 1e-6;
-const int SCALE = 10;
+int SCALE = 10;
 double MAX_TIME = 20.0;
 
 unsigned long long xor128(){
@@ -117,6 +117,8 @@ class Lighting {
       g_map = map;
       S = map.size();
       g_lights = vector<P>(L);
+      SCALE = 2500 / (S * S);
+      assert(SCALE > 0);
 
       g_points = vector<vector<int> >(S*SCALE, vector<int>(S*SCALE, 0));
 
@@ -132,9 +134,7 @@ class Lighting {
         }
       }
 
-      cerr << "S = " << S << endl;
-      cerr << "D = " << D << endl;
-      cerr << "L = " << L << endl;
+      cerr << "S = " << S << ", D = " << D << ", L = " << L << ", SCALE = " << SCALE << endl;
     }
 
     void extractWalls(vector<string> map) {
@@ -185,9 +185,7 @@ class Lighting {
       extractWalls(map);
 
       for (int i = 0; i < L; ++i) {
-        int x = xor128() % S;
-        int y = xor128() % S;
-        P p(getCoord(x), getCoord(y));
+        P p = createRandomPoint();
         g_lights[i] = p;
         ret.push_back(p.to_s());
       }
@@ -211,6 +209,16 @@ class Lighting {
       }
 
       return ret;
+    }
+
+    P createRandomPoint() {
+      int x, y;
+      do {
+        x = xor128() % S;
+        y = xor128() % S;
+      } while (g_map[y][x] == '#');
+
+      return P(getCoord(x), getCoord(y));
     }
 
     double calcScore() {
