@@ -20,6 +20,9 @@ const bool ON = true;
 const bool OFF = false;
 int SCALE = 10;
 double TIME_LIMIT = 19.0;
+int g_LightDistance;
+int g_LightCount;
+int S;
 
 unsigned long long xor128(){
   static unsigned long long rx=123456789, ry=362436069, rz=521288629, rw=88675123;
@@ -63,6 +66,10 @@ struct P {
     return dist2(other) <= P2(2 * d * SCALE);
   }
 
+  int hashCode() {
+    return y * S*2*SCALE + x;
+  }
+
   string to_s() {
     stringstream stream;
     stream << fixed << setprecision(2) << xd << " " << fixed << setprecision(2) << yd;
@@ -100,9 +107,6 @@ struct Wall {
   }
 };
 
-int g_LightDistance;
-int g_LightCount;
-int S;
 ll startCycle;
 vector<Wall> g_walls;
 vector<vector<int> > g_points;
