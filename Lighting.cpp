@@ -14,9 +14,8 @@ using namespace std;
 typedef long long ll;
 
 const ll CYCLE_PER_SEC = 2400000000;
-const int SCALE = 1;
 const double eps = 1e-6;
-const int f = 100;
+const int SCALE = 100;
 double MAX_TIME = 20.0;
 
 unsigned long long xor128(){
@@ -45,8 +44,8 @@ struct P {
   P(ll x = 0, ll y = 0) {
     this->y = y;
     this->x = x;
-    this->xd = x / 2.0 / f;
-    this->yd = y / 2.0 / f;
+    this->xd = x / 2.0 / SCALE;
+    this->yd = y / 2.0 / SCALE;
   }
 
   ll P2(ll a) {
@@ -58,7 +57,7 @@ struct P {
   }
 
   bool near(P other, ll d) {
-    return dist2(other) <= P2(2 * d * f);
+    return dist2(other) <= P2(2 * d * SCALE);
   }
 
   string to_s() {
@@ -76,7 +75,7 @@ ll orientedAreaSign(P a, P b, P c) {
 }
 
 int getCoord(int c) {
-  return (c + 0.5) * f * 2;
+  return (c + 0.5) * SCALE * 2;
 }
 
 struct Wall {
@@ -116,11 +115,11 @@ class Lighting {
             continue;
           }
 
-          P start(j*2*f, (i+1)*2*f);
+          P start(j*2*SCALE, (i+1)*2*SCALE);
           while (j < S && map[i][j] != map[i+1][j]) {
             j++;
           }
-          P end(j*2*f, (i+1)*2*f);
+          P end(j*2*SCALE, (i+1)*2*SCALE);
           Wall w(start, end);
           g_walls.push_back(w);
         }
@@ -134,11 +133,11 @@ class Lighting {
             continue;
           }
 
-          P start((j+1)*2*f, i*2*f);
+          P start((j+1)*2*SCALE, i*2*SCALE);
           while (i < S && map[i][j] != map[i][j+1]) {
             i++;
           }
-          P end((j+1)*2*f, i*2*f);
+          P end((j+1)*2*SCALE, i*2*SCALE);
           Wall w(start, end);
           g_walls.push_back(w);
         }
@@ -153,6 +152,8 @@ class Lighting {
       g_map = map;
       S = map.size();
       g_lights = vector<P>(L);
+
+      cerr << "S = " << S << endl;
 
       extractWalls(map);
 
@@ -183,14 +184,14 @@ class Lighting {
     }
 
     double calcScore() {
-      vector<vector<int> > points(S*f, vector<int>(S*f, 0));
+      vector<vector<int> > points(S*SCALE, vector<int>(S*SCALE, 0));
 
       for (int r = 0; r < S; r++) {
         for (int c = 0; c < S; c++) {
           if (g_map[r][c] != '#') continue;
 
-          for (int x = c*f; x < (c+1)*f; x++) {
-            for (int y = r*f; y < (r+1)*f; y++) {
+          for (int x = c*SCALE; x < (c+1)*SCALE; x++) {
+            for (int y = r*SCALE; y < (r+1)*SCALE; y++) {
               points[y][x] = -1;
             }
           }
@@ -208,10 +209,10 @@ class Lighting {
         for (int c = 0; c < S; c++) {
           if (g_map[r][c] == '#') continue;
 
-          for (int x = 0; x < f; x++) {
-            for (int y = 0; y < f; y++) {
+          for (int x = 0; x < SCALE; x++) {
+            for (int y = 0; y < SCALE; y++) {
               nTotal++;
-              if (points[r*f+y][c*f+x] > 0) {
+              if (points[r*SCALE+y][c*SCALE+x] > 0) {
                 nIllum++;
               }
             }
@@ -226,10 +227,10 @@ class Lighting {
     void markPointsIlluminated(int lightInd, vector<vector<int> > &points) {
       P light = g_lights[lightInd];
 
-      ll boxX1 = max(0LL, light.x - 2*f*g_LightDistance);
-      ll boxX2 = min(2*(f*S-1), light.x + 2*f*g_LightDistance);
-      ll boxY1 = max(0LL, light.y - 2*f*g_LightDistance);
-      ll boxY2 = min(2*(f*S-1), light.y + 2*f*g_LightDistance);
+      ll boxX1 = max(0LL, light.x - 2*SCALE*g_LightDistance);
+      ll boxX2 = min(2*(SCALE*S-1), light.x + 2*SCALE*g_LightDistance);
+      ll boxY1 = max(0LL, light.y - 2*SCALE*g_LightDistance);
+      ll boxY2 = min(2*(SCALE*S-1), light.y + 2*SCALE*g_LightDistance);
 
       vector<int> localWallsInd;
       for (int i = 0; i < g_walls.size(); i++) {
