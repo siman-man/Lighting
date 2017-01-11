@@ -14,6 +14,7 @@ using namespace std;
 typedef long long ll;
 
 const ll CYCLE_PER_SEC = 2400000000;
+const int WALL = -1;
 const double eps = 1e-6;
 const int SCALE = 100;
 double MAX_TIME = 20.0;
@@ -192,7 +193,7 @@ class Lighting {
 
           for (int x = c*SCALE; x < (c+1)*SCALE; x++) {
             for (int y = r*SCALE; y < (r+1)*SCALE; y++) {
-              points[y][x] = -1;
+              points[y][x] = WALL;
             }
           }
         }
@@ -243,9 +244,7 @@ class Lighting {
 
       for (int x = (int)boxX1 / 2; x <= boxX2 / 2; x++) {
         for (int y = (int)boxY1 / 2; y <= boxY2 / 2; y++) {
-          if (points[y][x] != 0) {
-            continue;
-          }
+          if (points[y][x] == WALL) continue;
           P point(x*2+1, y*2+1);
           if (!light.near(point, g_LightDistance)) continue;
           bool ok = true;
@@ -257,7 +256,8 @@ class Lighting {
             }
           }
           if (ok) {
-            points[y][x] = 1 + lightInd;
+            assert(points[y][x] != WALL);
+            points[y][x] |= (1 << lightInd);
           }
         }
       }
