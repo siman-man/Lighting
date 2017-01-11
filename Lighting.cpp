@@ -15,8 +15,10 @@ typedef long long ll;
 
 const ll CYCLE_PER_SEC = 2400000000;
 const int WALL = -1;
+const bool ON = true;
+const bool OFF = false;
 const double eps = 1e-6;
-const int SCALE = 100;
+const int SCALE = 10;
 double MAX_TIME = 20.0;
 
 unsigned long long xor128(){
@@ -66,11 +68,11 @@ struct P {
   }
 };
 
-bool boundBoxIntersect(ll a, ll b, ll c, ll d) {
+inline bool boundBoxIntersect(ll a, ll b, ll c, ll d) {
   return max(min(a,b), min(c,d)) <= min(max(a,b), max(c,d));
 }
 
-ll orientedAreaSign(P a, P b, P c) {
+inline ll orientedAreaSign(P a, P b, P c) {
   ll area = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
   return area == 0 ? 0 : area / abs(area);
 }
@@ -128,6 +130,8 @@ class Lighting {
       }
 
       cerr << "S = " << S << endl;
+      cerr << "D = " << D << endl;
+      cerr << "L = " << L << endl;
     }
 
     void extractWalls(vector<string> map) {
@@ -172,24 +176,27 @@ class Lighting {
 
     vector<string> setLights(vector<string> map, int D, int L) {
       vector<string> ret;
-      vector<P> points;
 
       init(map, D, L);
 
       extractWalls(map);
 
-      srand(123);
       for (int i = 0; i < L; ++i) {
-        int x = rand() % S;
-        int y = rand() % S;
+        int x = xor128() % S;
+        int y = xor128() % S;
         P p(getCoord(x), getCoord(y));
         g_lights[i] = p;
         P pp(x,y);
         ret.push_back(pp.to_s());
       }
 
-      double score = calcScore();
-      fprintf(stderr,"score = %f\n", score);
+      for (int i = 0; i < g_LightCount; i++) {
+        markPointsIlluminated(i);
+      }
+      fprintf(stderr,"score = %f\n", calcScore());
+
+      markPointsIlluminated(1, OFF);
+      fprintf(stderr,"score = %f\n", calcScore());
 
       return ret;
     }
@@ -205,10 +212,6 @@ class Lighting {
     }
 
     double calcScore() {
-      for (int i = 0; i < g_LightCount; i++) {
-        markPointsIlluminated(i);
-      }
-
       int nIllum = 0;
       int nTotal = 0;
 
@@ -231,7 +234,7 @@ class Lighting {
       return nIllum * 1.0 / nTotal;
     }
 
-    int markPointsIlluminated(int lightInd) {
+    int markPointsIlluminated(int lightInd, bool swt = ON) {
       P light = g_lights[lightInd];
 
       ll boxX1 = max(0LL, light.x - 2*SCALE*g_LightDistance);
@@ -265,8 +268,13 @@ class Lighting {
           }
           if (ok) {
             assert(g_points[y][x] != WALL);
-            if (g_points[y][x] == 0) lightingCount++;
-            g_points[y][x] |= (1 << lightInd);
+            if (swt) {
+              if (g_points[y][x] == 0) lightingCount++;
+              g_points[y][x] |= (1 << lightInd);
+            } else {
+              g_points[y][x] ^= (1 << lightInd);
+              if (g_points[y][x] == 0) lightingCount++;
+            }
           }
         }
       }
