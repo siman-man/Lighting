@@ -18,7 +18,6 @@ const ll CYCLE_PER_SEC = 2400000000;
 const int WALL = -1;
 const bool ON = true;
 const bool OFF = false;
-const double eps = 1e-6;
 int SCALE = 10;
 double TIME_LIMIT = 19.0;
 
@@ -40,27 +39,27 @@ double getTime(unsigned long long int begin_cycle) {
 }
 
 struct P {
-  ll y;
-  ll x;
+  int y;
+  int x;
   double xd;
   double yd;
 
-  P(ll x = 0, ll y = 0) {
+  P(int x = 0, int y = 0) {
     this->y = y;
     this->x = x;
     this->xd = x / 2.0 / SCALE;
     this->yd = y / 2.0 / SCALE;
   }
 
-  ll P2(ll a) {
+  inline int P2(int a) {
     return a * a;
   }
 
-  ll dist2(P other) {
-    return P2(x - other.x) + P2(y - other.y);
+  inline int dist2(P &other) {
+    return P2(x-other.x) + P2(y-other.y);
   }
 
-  bool near(P other, ll d) {
+  bool near(P &other, int d) {
     return dist2(other) <= P2(2 * d * SCALE);
   }
 
@@ -71,12 +70,12 @@ struct P {
   }
 };
 
-inline bool boundBoxIntersect(ll a, ll b, ll c, ll d) {
+inline bool boundBoxIntersect(int a, int b, int c, int d) {
   return max(min(a,b), min(c,d)) <= min(max(a,b), max(c,d));
 }
 
-inline ll orientedAreaSign(P a, P b, P c) {
-  ll area = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+inline int orientedAreaSign(P &a, P &b, P &c) {
+  int area = (b.x-a.x) * (c.y-a.y) - (b.y-a.y) * (c.x-a.x);
   return area == 0 ? 0 : area / abs(area);
 }
 
@@ -93,7 +92,7 @@ struct Wall {
     end = e;
   }
 
-  bool intersect(Wall other) {
+  bool intersect(Wall &other) {
     return boundBoxIntersect(start.x, end.x, other.start.x, other.end.x) &&
            boundBoxIntersect(start.y, end.y, other.start.y, other.end.y) &&
            orientedAreaSign(start, end, other.start) * orientedAreaSign(start, end, other.end) <= 0 &&
@@ -101,9 +100,9 @@ struct Wall {
   }
 };
 
-ll g_LightDistance;
-ll g_LightCount;
-ll S;
+int g_LightDistance;
+int g_LightCount;
+int S;
 ll startCycle;
 vector<Wall> g_walls;
 vector<vector<int> > g_points;
@@ -120,7 +119,7 @@ class Lighting {
       g_map = map;
       S = map.size();
       g_lights = vector<P>(L);
-      SCALE = 2500 / (S * S);
+      SCALE = ceil(sqrt(2500 / (S * S)));
       assert(SCALE > 0);
 
       g_points = vector<vector<int> >(S*SCALE, vector<int>(S*SCALE, 0));
@@ -290,24 +289,24 @@ class Lighting {
     int markPointsIlluminated(int lightInd, bool swt = ON) {
       P light = g_lights[lightInd];
 
-      ll boxX1 = max(0LL, light.x - 2*SCALE*g_LightDistance);
-      ll boxX2 = min(2*(SCALE*S-1), light.x + 2*SCALE*g_LightDistance);
-      ll boxY1 = max(0LL, light.y - 2*SCALE*g_LightDistance);
-      ll boxY2 = min(2*(SCALE*S-1), light.y + 2*SCALE*g_LightDistance);
+      int boxX1 = max(0, light.x - 2*SCALE*g_LightDistance);
+      int boxX2 = min(2*(SCALE*S-1), light.x + 2*SCALE*g_LightDistance);
+      int boxY1 = max(0, light.y - 2*SCALE*g_LightDistance);
+      int boxY2 = min(2*(SCALE*S-1), light.y + 2*SCALE*g_LightDistance);
 
       vector<int> localWallsInd;
       for (int i = 0; i < g_walls.size(); i++) {
-        Wall w = g_walls[i];
-        if (boundBoxIntersect(boxX1, boxX2, w.start.x, w.end.x) &&
-            boundBoxIntersect(boxY1, boxY2, w.start.y, w.end.y)) {
+        Wall *w = &g_walls[i];
+        if (boundBoxIntersect(boxX1, boxX2, w->start.x, w->end.x) &&
+            boundBoxIntersect(boxY1, boxY2, w->start.y, w->end.y)) {
               localWallsInd.push_back(i);
             }
       }
 
       int lightingCount = 0;
 
-      for (int x = (int)boxX1 / 2; x <= boxX2 / 2; x++) {
-        for (int y = (int)boxY1 / 2; y <= boxY2 / 2; y++) {
+      for (int x = boxX1 / 2; x <= boxX2 / 2; x++) {
+        for (int y = boxY1 / 2; y <= boxY2 / 2; y++) {
           if (g_points[y][x] == WALL) continue;
           P point(x*2+1, y*2+1);
           if (!light.near(point, g_LightDistance)) continue;
@@ -351,7 +350,6 @@ int main() {
   vector<string> ret = l.setLights(map, D, maxL);
   cout << ret.size() << endl;
   for (int i = 0; i < (int)ret.size(); ++i) {
-    cerr << ret[i] << endl;
     cout << ret[i] << endl;}
   cout.flush();
 }
