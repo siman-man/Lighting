@@ -41,6 +41,16 @@ double getTime(unsigned long long int begin_cycle) {
   return (double)(getCycle() - begin_cycle) / CYCLE_PER_SEC;
 }
 
+struct Coord {
+  int y;
+  int x;
+
+  Coord(int y = -1, int x = -1) {
+    this->y = y;
+    this->x = x;
+  }
+};
+
 struct P {
   int y;
   int x;
