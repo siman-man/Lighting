@@ -119,7 +119,7 @@ class Lighting {
       g_map = map;
       S = map.size();
       g_lights = vector<P>(L);
-      SCALE = ceil(sqrt(2500 / (S * S)));
+      SCALE = ceil(sqrt(5000 / (S * S)));
       assert(SCALE > 0);
 
       g_points = vector<vector<int> >(S*SCALE, vector<int>(S*SCALE, 0));
