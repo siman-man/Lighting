@@ -6,6 +6,7 @@
 #include <cassert>
 #include <map>
 #include <sstream>
+#include <iomanip>
 #include <vector>
 #include <set>
 #include <string>
@@ -64,7 +65,9 @@ struct P {
   }
 
   string to_s() {
-    return to_string(x) + ".50" + " " + to_string(y) + ".50";
+    stringstream stream;
+    stream << fixed << setprecision(2) << xd << " " << fixed << setprecision(2) << yd;
+    return stream.str();
   }
 };
 
@@ -186,8 +189,7 @@ class Lighting {
         int y = xor128() % S;
         P p(getCoord(x), getCoord(y));
         g_lights[i] = p;
-        P pp(x,y);
-        ret.push_back(pp.to_s());
+        ret.push_back(p.to_s());
       }
 
       for (int i = 0; i < g_LightCount; i++) {
