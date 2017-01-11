@@ -54,12 +54,14 @@ struct Coord {
 struct P {
   int y;
   int x;
+  int t;
   double xd;
   double yd;
 
-  P(int x = 0, int y = 0) {
+  P(int x = 0, int y = 0, int t = 0) {
     this->y = y;
     this->x = x;
+    this->t = t;
     this->xd = x / 2.0 / SCALE;
     this->yd = y / 2.0 / SCALE;
   }
@@ -76,8 +78,8 @@ struct P {
     return dist2(other) <= P2(2 * d * SCALE);
   }
 
-  int hashCode() {
-    return y * S*2*SCALE + x;
+  ll hashCode() {
+    return t * (S*2*SCALE*S*2*SCALE) + y * S*2*SCALE + x;
   }
 
   string to_s() {
@@ -96,8 +98,12 @@ inline int orientedAreaSign(P &a, P &b, P &c) {
   return area == 0 ? 0 : area / abs(area);
 }
 
-int getCoord(int c) {
-  return (c + 0.5) * SCALE * 2;
+int getCoord(int c, int t = 0) {
+  if (t == 0) {
+    return (c + 0.5) * SCALE * 2;
+  } else {
+    return c * SCALE * 2;
+  }
 }
 
 struct Wall {
@@ -121,7 +127,7 @@ ll startCycle;
 vector<Wall> g_walls;
 vector<vector<int> > g_points;
 vector<P> g_lights;
-unordered_map<int, vector<Coord> > g_lightMemo;
+unordered_map<ll, vector<Coord> > g_lightMemo;
 vector<string> g_map;
 
 class Lighting {
@@ -238,7 +244,9 @@ class Lighting {
         y = xor128() % S;
       } while (g_map[y][x] == '#');
 
-      return P(getCoord(x), getCoord(y));
+      int t = xor128()%2;
+
+      return P(getCoord(x, t), getCoord(y, t));
     }
 
     void replaceLights() {
