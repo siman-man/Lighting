@@ -259,9 +259,8 @@ class Lighting {
         int lightInd = xor128()%g_LightCount;
         P light = g_lights[lightInd];
 
-        relocationLight(lightInd);
-
-        score = calcScore();
+        int diffScore = relocationLight(lightInd);
+        score = bestScore + diffScore;
 
         if (bestScore < score) {
           temp = g_points;
@@ -269,6 +268,7 @@ class Lighting {
         } else {
           g_points = temp;
           g_lights[lightInd] = light;
+          score -= diffScore;
         }
 
         tryCount++;
@@ -279,12 +279,14 @@ class Lighting {
       cerr << "tryCount = " << tryCount << endl;
     }
 
-    void relocationLight(int lightInd) {
-      markPointsIlluminated(lightInd, OFF);
+    int relocationLight(int lightInd) {
+      int oldCount = markPointsIlluminated(lightInd, OFF);
 
       g_lights[lightInd] = createRandomPoint();
 
-      markPointsIlluminated(lightInd, ON);
+      int newCount = markPointsIlluminated(lightInd, ON);
+
+      return newCount - oldCount;
     }
 
     double calcScore() {
