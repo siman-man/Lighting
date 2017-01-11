@@ -187,15 +187,18 @@ class Lighting {
       for (int i = 0; i < L; ++i) {
         P p = createRandomPoint();
         g_lights[i] = p;
-        ret.push_back(p.to_s());
       }
 
       for (int i = 0; i < g_LightCount; i++) {
         markPointsIlluminated(i);
       }
-      fprintf(stderr,"score = %f\n", calcScore());
 
-      markPointsIlluminated(1, OFF);
+      replaceLights();
+
+      for (int i = 0; i < L; ++i) {
+        ret.push_back(g_lights[i].to_s());
+      }
+
       fprintf(stderr,"score = %f\n", calcScore());
 
       return ret;
@@ -221,6 +224,41 @@ class Lighting {
       return P(getCoord(x), getCoord(y));
     }
 
+    void replaceLights() {
+      double bestScore = calcScore();
+      double score = 0.0;
+      ll tryCount = 0;
+
+      for (int i = 0; i < 100; i++) {
+        int lightInd = xor128()%g_LightCount;
+        P light = g_lights[lightInd];
+
+        relocationLight(lightInd);
+
+        score = calcScore();
+
+        if (bestScore < score) {
+          bestScore = score;
+        } else {
+          markPointsIlluminated(lightInd, OFF);
+          g_lights[lightInd] = light;
+          markPointsIlluminated(lightInd, ON);
+        }
+
+        tryCount++;
+      }
+
+      cerr << "tryCount = " << tryCount << endl;
+    }
+
+    void relocationLight(int lightInd) {
+      markPointsIlluminated(lightInd, OFF);
+
+      g_lights[lightInd] = createRandomPoint();
+
+      markPointsIlluminated(lightInd, ON);
+    }
+
     double calcScore() {
       int nIllum = 0;
       int nTotal = 0;
@@ -240,7 +278,6 @@ class Lighting {
         }
       }
 
-      fprintf(stderr,"(%d/%d)\n", nIllum, nTotal);
       return nIllum * 1.0 / nTotal;
     }
 
