@@ -2,7 +2,7 @@ require 'open3'
 
 PROBLEM_NAME = 'Lighting'
 ROUND_ID = 16857
-SEED = 5
+SEED = 8
 
 desc 'c++ file compile'
 task :default do

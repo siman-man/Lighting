@@ -20,7 +20,7 @@ const bool ON = true;
 const bool OFF = false;
 const double eps = 1e-6;
 int SCALE = 10;
-double MAX_TIME = 20.0;
+double TIME_LIMIT = 19.0;
 
 unsigned long long xor128(){
   static unsigned long long rx=123456789, ry=362436069, rz=521288629, rw=88675123;
@@ -104,6 +104,7 @@ struct Wall {
 ll g_LightDistance;
 ll g_LightCount;
 ll S;
+ll startCycle;
 vector<Wall> g_walls;
 vector<vector<int> > g_points;
 vector<P> g_lights;
@@ -112,6 +113,8 @@ vector<string> g_map;
 class Lighting {
   public:
     void init(vector<string> map, int D, int L) {
+      startCycle = getCycle();
+
       g_LightDistance = D;
       g_LightCount = L;
       g_map = map;
@@ -228,8 +231,9 @@ class Lighting {
       double bestScore = calcScore();
       double score = 0.0;
       ll tryCount = 0;
+      vector<vector<int> > temp = g_points;
 
-      for (int i = 0; i < 100; i++) {
+      while (true) {
         int lightInd = xor128()%g_LightCount;
         P light = g_lights[lightInd];
 
@@ -238,14 +242,16 @@ class Lighting {
         score = calcScore();
 
         if (bestScore < score) {
+          temp = g_points;
           bestScore = score;
         } else {
-          markPointsIlluminated(lightInd, OFF);
+          g_points = temp;
           g_lights[lightInd] = light;
-          markPointsIlluminated(lightInd, ON);
         }
 
         tryCount++;
+
+        if (TIME_LIMIT < getTime(startCycle)) break;
       }
 
       cerr << "tryCount = " << tryCount << endl;
@@ -332,30 +338,20 @@ class Lighting {
 
 // -------8<------- end of solution submitted to the website -------8<-------
 
-template<class T> void getVector(vector<T>& v) {
-  for (int i = 0; i < v.size(); ++i)
-    cin >> v[i];
-}
-
+template<class T> void getVector(vector<T>& v) { for (int i = 0; i < v.size(); ++i) cin >> v[i];}
 int main() {
-  MAX_TIME = 2.0;
-  Lighting l;
-  int s;
+  TIME_LIMIT = 2.0;
+  Lighting l; int s;
   cin >> s;
-  vector<string> map(s);
-  getVector(map);
-
+  vector<string> map(s); getVector(map);
   int D;
   cin >> D;
-
   int maxL;
   cin >> maxL;
-
   vector<string> ret = l.setLights(map, D, maxL);
   cout << ret.size() << endl;
   for (int i = 0; i < (int)ret.size(); ++i) {
     cerr << ret[i] << endl;
-    cout << ret[i] << endl;
-  }
+    cout << ret[i] << endl;}
   cout.flush();
 }
