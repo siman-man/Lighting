@@ -100,11 +100,36 @@ ll g_LightDistance;
 ll g_LightCount;
 ll S;
 vector<Wall> g_walls;
+vector<vector<int> > g_points;
 vector<P> g_lights;
 vector<string> g_map;
 
 class Lighting {
   public:
+    void init(vector<string> map, int D, int L) {
+      g_LightDistance = D;
+      g_LightCount = L;
+      g_map = map;
+      S = map.size();
+      g_lights = vector<P>(L);
+
+      g_points = vector<vector<int> >(S*SCALE, vector<int>(S*SCALE, 0));
+
+      for (int r = 0; r < S; r++) {
+        for (int c = 0; c < S; c++) {
+          if (g_map[r][c] != '#') continue;
+
+          for (int x = c*SCALE; x < (c+1)*SCALE; x++) {
+            for (int y = r*SCALE; y < (r+1)*SCALE; y++) {
+              g_points[y][x] = WALL;
+            }
+          }
+        }
+      }
+
+      cerr << "S = " << S << endl;
+    }
+
     void extractWalls(vector<string> map) {
 
       for (int i = 0; i < S-1; i++) {
@@ -148,13 +173,8 @@ class Lighting {
     vector<string> setLights(vector<string> map, int D, int L) {
       vector<string> ret;
       vector<P> points;
-      g_LightDistance = D;
-      g_LightCount = L;
-      g_map = map;
-      S = map.size();
-      g_lights = vector<P>(L);
 
-      cerr << "S = " << S << endl;
+      init(map, D, L);
 
       extractWalls(map);
 
@@ -185,22 +205,8 @@ class Lighting {
     }
 
     double calcScore() {
-      vector<vector<int> > points(S*SCALE, vector<int>(S*SCALE, 0));
-
-      for (int r = 0; r < S; r++) {
-        for (int c = 0; c < S; c++) {
-          if (g_map[r][c] != '#') continue;
-
-          for (int x = c*SCALE; x < (c+1)*SCALE; x++) {
-            for (int y = r*SCALE; y < (r+1)*SCALE; y++) {
-              points[y][x] = WALL;
-            }
-          }
-        }
-      }
-
       for (int i = 0; i < g_LightCount; i++) {
-        markPointsIlluminated(i, points);
+        markPointsIlluminated(i);
       }
 
       int nIllum = 0;
@@ -213,7 +219,7 @@ class Lighting {
           for (int x = 0; x < SCALE; x++) {
             for (int y = 0; y < SCALE; y++) {
               nTotal++;
-              if (points[r*SCALE+y][c*SCALE+x] > 0) {
+              if (g_points[r*SCALE+y][c*SCALE+x] > 0) {
                 nIllum++;
               }
             }
@@ -225,7 +231,7 @@ class Lighting {
       return nIllum * 1.0 / nTotal;
     }
 
-    void markPointsIlluminated(int lightInd, vector<vector<int> > &points) {
+    int markPointsIlluminated(int lightInd) {
       P light = g_lights[lightInd];
 
       ll boxX1 = max(0LL, light.x - 2*SCALE*g_LightDistance);
@@ -242,9 +248,11 @@ class Lighting {
             }
       }
 
+      int lightingCount = 0;
+
       for (int x = (int)boxX1 / 2; x <= boxX2 / 2; x++) {
         for (int y = (int)boxY1 / 2; y <= boxY2 / 2; y++) {
-          if (points[y][x] == WALL) continue;
+          if (g_points[y][x] == WALL) continue;
           P point(x*2+1, y*2+1);
           if (!light.near(point, g_LightDistance)) continue;
           bool ok = true;
@@ -256,11 +264,14 @@ class Lighting {
             }
           }
           if (ok) {
-            assert(points[y][x] != WALL);
-            points[y][x] |= (1 << lightInd);
+            assert(g_points[y][x] != WALL);
+            if (g_points[y][x] == 0) lightingCount++;
+            g_points[y][x] |= (1 << lightInd);
           }
         }
       }
+
+      return lightingCount;
     }
 };
 
