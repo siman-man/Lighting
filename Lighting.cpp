@@ -140,7 +140,7 @@ class Lighting {
       g_map = map;
       S = map.size();
       g_lights = vector<P>(L);
-      SCALE = ceil(sqrt(5000 / (S * S)));
+      SCALE = ceil(sqrt(15000 / (S * S)));
       assert(SCALE > 0);
 
       g_points = vector<vector<int> >(S*SCALE, vector<int>(S*SCALE, 0));
@@ -244,9 +244,10 @@ class Lighting {
         y = xor128() % S;
       } while (g_map[y][x] == '#');
 
-      int t = xor128()%2;
+      int t1 = xor128()%2;
+      int t2 = xor128()%2;
 
-      return P(getCoord(x, t), getCoord(y, t));
+      return P(getCoord(x, t1), getCoord(y, t2));
     }
 
     void replaceLights() {
@@ -268,7 +269,6 @@ class Lighting {
         } else {
           g_points = temp;
           g_lights[lightInd] = light;
-          score -= diffScore;
         }
 
         tryCount++;
@@ -382,7 +382,7 @@ class Lighting {
 
 template<class T> void getVector(vector<T>& v) { for (int i = 0; i < v.size(); ++i) cin >> v[i];}
 int main() {
-  TIME_LIMIT = 2.0;
+  TIME_LIMIT = 10.0;
   Lighting l; int s;
   cin >> s;
   vector<string> map(s); getVector(map);
