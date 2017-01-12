@@ -133,7 +133,6 @@ class Lighting {
       S = map.size();
       g_lights = vector<P>(L);
       SCALE = ceil(sqrt(15000 / (S * S)));
-      assert(SCALE > 0);
 
       g_points = vector<vector<int> >(S*SCALE, vector<int>(S*SCALE, 0));
 
@@ -366,7 +365,6 @@ class Lighting {
             }
           }
           if (ok) {
-            assert(g_points[y][x] != WALL);
             g_lightMemo[hashCode].push_back(Coord(y,x));
           }
         }
@@ -380,7 +378,7 @@ class Lighting {
 
 template<class T> void getVector(vector<T>& v) { for (int i = 0; i < v.size(); ++i) cin >> v[i];}
 int main() {
-  TIME_LIMIT = 2.0;
+  TIME_LIMIT = 10.0;
   Lighting l; int s;
   cin >> s;
   vector<string> map(s); getVector(map);
