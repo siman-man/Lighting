@@ -54,14 +54,12 @@ struct Coord {
 struct P {
   int y;
   int x;
-  int t;
   double xd;
   double yd;
 
-  P(int x = 0, int y = 0, int t = 0) {
+  P(int x = 0, int y = 0) {
     this->y = y;
     this->x = x;
-    this->t = t;
     this->xd = x / 2.0 / SCALE;
     this->yd = y / 2.0 / SCALE;
   }
@@ -79,7 +77,7 @@ struct P {
   }
 
   ll hashCode() {
-    return t * (S*2*SCALE*S*2*SCALE) + y * S*2*SCALE + x;
+    return y * S*2*SCALE + x;
   }
 
   string to_s() {
