@@ -307,14 +307,14 @@ class Lighting {
     }
 
     int markPointsIlluminated(int lightInd, bool swt = ON) {
-      vector<Coord> coords = getMarkPoints(lightInd);
+      vector<Coord> *coords = getMarkPoints(lightInd);
 
       int lightingCount = 0;
       int mask = (1 << lightInd);
-      int csize = coords.size();
+      int csize = coords->size();
 
       for (int i = 0; i < csize; i++) {
-        Coord coord = coords[i];
+        Coord coord = coords->at(i);
 
         if (swt) {
           if (g_points[coord.y][coord.x] == 0) lightingCount++;
@@ -328,10 +328,11 @@ class Lighting {
       return lightingCount;
     }
 
-    vector<Coord> getMarkPoints(int lightInd) {
+    vector<Coord>* getMarkPoints(int lightInd) {
       P light = g_lights[lightInd];
+      ll hashCode = light.hashCode();
 
-      if (g_lightMemo.count(light.hashCode())) return g_lightMemo[light.hashCode()];
+      if (g_lightMemo.count(light.hashCode())) return &g_lightMemo[light.hashCode()];
 
       int boxX1 = max(0, light.x - 2*SCALE*g_LightDistance);
       int boxX2 = min(2*(SCALE*S-1), light.x + 2*SCALE*g_LightDistance);
@@ -366,14 +367,12 @@ class Lighting {
           }
           if (ok) {
             assert(g_points[y][x] != WALL);
-            coords.push_back(Coord(y,x));
+            g_lightMemo[hashCode].push_back(Coord(y,x));
           }
         }
       }
 
-      g_lightMemo[light.hashCode()] = coords;
-
-      return coords;
+      return &g_lightMemo[hashCode];
     }
 };
 
