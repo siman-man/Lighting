@@ -261,8 +261,9 @@ class Lighting {
           temp = g_points;
           bestScore = score;
         } else {
-          g_points = temp;
+          markPointsIlluminated(lightInd, OFF);
           g_lights[lightInd] = light;
+          markPointsIlluminated(lightInd, ON);
         }
 
         tryCount++;
