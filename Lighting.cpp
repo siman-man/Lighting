@@ -245,31 +245,51 @@ class Lighting {
     }
 
     void replaceLights() {
+      vector<P> bestLights = g_lights;
+      vector<P> goodLights = g_lights;
       double bestScore = calcScore();
+      double goodScore = bestScore;
       double score = 0.0;
       ll tryCount = 0;
 
-      while (true) {
+      double currentTime = getTime(startCycle);
+      double alpha = 0.9995;
+      double T = 10000.0;
+      double k = 10;
+      int R = 1000000;
+
+      while (currentTime < TIME_LIMIT) {
+        double remainTime = TIME_LIMIT - currentTime;
         int lightInd = xor128()%g_LightCount;
         P light = g_lights[lightInd];
 
         int diffScore = relocationLight(lightInd);
-        score = bestScore + diffScore;
+        score = goodScore + diffScore;
 
         if (bestScore < score) {
           bestScore = score;
+          bestLights = g_lights;
+        }
+
+        if (goodScore < score || (xor128()%R < R*exp(diffScore/(k*remainTime)))) {
+          goodScore = score;
         } else {
           markPointsIlluminated(lightInd, OFF);
           g_lights[lightInd] = light;
           markPointsIlluminated(lightInd, ON);
         }
 
-        tryCount++;
+        if (tryCount % 100000 == 0) {
+          fprintf(stderr,"diff = %d, rate = %f, remainTime = %4.2f\n", diffScore, exp(diffScore/(k*remainTime)), remainTime);
+        }
 
-        if (TIME_LIMIT < getTime(startCycle)) break;
+        tryCount++;
+        T *= alpha;
+        currentTime = getTime(startCycle);
       }
 
       cerr << "tryCount = " << tryCount << endl;
+      g_lights = bestLights;
     }
 
     int relocationLight(int lightInd) {
