@@ -98,7 +98,7 @@ inline int orientedAreaSign(P &a, P &b, P &c) {
 
 int getCoord(int c, int t = 0) {
   if (t == 0) {
-    return (c + 0.5) * SCALE * 2;
+    return (c + (0.25*(xor128()%4))) * SCALE * 2;
   } else {
     return c * SCALE * 2;
   }
