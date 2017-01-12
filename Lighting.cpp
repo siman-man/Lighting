@@ -314,8 +314,9 @@ class Lighting {
 
       int lightingCount = 0;
       int mask = (1 << lightInd);
+      int csize = coords.size();
 
-      for (int i = 0; i < coords.size(); i++) {
+      for (int i = 0; i < csize; i++) {
         Coord coord = coords[i];
 
         if (swt) {
@@ -358,7 +359,9 @@ class Lighting {
           if (!light.near(point, g_LightDistance)) continue;
           bool ok = true;
           Wall beam(point, light);
-          for (int ind : localWallsInd) {
+          int wsize = localWallsInd.size();
+          for (int i = 0; i < wsize; i++) {
+            int ind = localWallsInd[i];
             if (beam.intersect(g_walls[ind])) {
               ok = false;
               break;
