@@ -348,8 +348,6 @@ class Lighting {
             }
       }
 
-      vector<Coord> coords;
-
       for (int x = boxX1 / 2; x <= boxX2 / 2; x++) {
         for (int y = boxY1 / 2; y <= boxY2 / 2; y++) {
           if (g_points[y][x] == WALL) continue;
