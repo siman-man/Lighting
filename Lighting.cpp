@@ -248,7 +248,6 @@ class Lighting {
       double bestScore = calcScore();
       double score = 0.0;
       ll tryCount = 0;
-      vector<vector<int> > temp = g_points;
 
       while (true) {
         int lightInd = xor128()%g_LightCount;
@@ -258,7 +257,6 @@ class Lighting {
         score = bestScore + diffScore;
 
         if (bestScore < score) {
-          temp = g_points;
           bestScore = score;
         } else {
           markPointsIlluminated(lightInd, OFF);
