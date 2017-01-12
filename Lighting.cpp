@@ -54,14 +54,10 @@ struct Coord {
 struct P {
   int y;
   int x;
-  double xd;
-  double yd;
 
   P(int x = 0, int y = 0) {
     this->y = y;
     this->x = x;
-    this->xd = x / 2.0 / SCALE;
-    this->yd = y / 2.0 / SCALE;
   }
 
   inline int P2(int a) {
@@ -82,7 +78,7 @@ struct P {
 
   string to_s() {
     stringstream stream;
-    stream << fixed << setprecision(2) << xd << " " << fixed << setprecision(2) << yd;
+    stream << fixed << setprecision(2) << (x/2.0/SCALE) << " " << fixed << setprecision(2) << (y/2.0/SCALE);
     return stream.str();
   }
 };
