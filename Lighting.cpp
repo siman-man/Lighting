@@ -16,8 +16,6 @@ typedef long long ll;
 
 const ll CYCLE_PER_SEC = 2400000000;
 const int WALL = -1;
-const bool ON = true;
-const bool OFF = false;
 int SCALE = 10;
 double TIME_LIMIT = 20.0;
 int g_LightDistance;
@@ -158,7 +156,6 @@ class Lighting {
 
       for (int i = 0; i < S-1; i++) {
         int j = 0;
-
         while (j < S) {
           if (map[i][j] == map[i+1][j]) {
             j++;
@@ -170,8 +167,7 @@ class Lighting {
             j++;
           }
           P end(j*2*SCALE, (i+1)*2*SCALE);
-          Wall w(start, end);
-          g_walls.push_back(w);
+          g_walls.push_back(Wall(start, end));
         }
       }
 
@@ -188,8 +184,7 @@ class Lighting {
             i++;
           }
           P end((j+1)*2*SCALE, i*2*SCALE);
-          Wall w(start, end);
-          g_walls.push_back(w);
+          g_walls.push_back(Wall(start, end));
         }
       }
     }
@@ -207,7 +202,7 @@ class Lighting {
       }
 
       for (int i = 0; i < g_LightCount; i++) {
-        markPointsIlluminated(i);
+        markOnIlluminated(i);
       }
 
       replaceLights();
@@ -259,9 +254,9 @@ class Lighting {
         if (bestScore < score) {
           bestScore = score;
         } else {
-          markPointsIlluminated(lightInd, OFF);
+          markOffIlluminated(lightInd);
           g_lights[lightInd] = light;
-          markPointsIlluminated(lightInd, ON);
+          markOnIlluminated(lightInd);
         }
 
         tryCount++;
@@ -273,11 +268,11 @@ class Lighting {
     }
 
     int relocationLight(int lightInd) {
-      int oldCount = markPointsIlluminated(lightInd, OFF);
+      int oldCount = markOffIlluminated(lightInd);
 
       g_lights[lightInd] = createRandomPoint();
 
-      int newCount = markPointsIlluminated(lightInd, ON);
+      int newCount = markOnIlluminated(lightInd);
 
       return newCount - oldCount;
     }
@@ -304,7 +299,7 @@ class Lighting {
       return nIllum * 1.0 / nTotal;
     }
 
-    int markPointsIlluminated(int lightInd, bool swt = ON) {
+    int markOffIlluminated(int lightInd) {
       vector<Coord> *coords = getMarkPoints(lightInd);
 
       int lightingCount = 0;
@@ -314,13 +309,25 @@ class Lighting {
       for (int i = 0; i < csize; i++) {
         Coord coord = coords->at(i);
 
-        if (swt) {
-          if (g_points[coord.y][coord.x] == 0) lightingCount++;
-          g_points[coord.y][coord.x] |= mask;
-        } else {
-          g_points[coord.y][coord.x] ^= mask;
-          if (g_points[coord.y][coord.x] == 0) lightingCount++;
-        }
+        g_points[coord.y][coord.x] ^= mask;
+        if (g_points[coord.y][coord.x] == 0) lightingCount++;
+      }
+
+      return lightingCount;
+    }
+
+    int markOnIlluminated(int lightInd) {
+      vector<Coord> *coords = getMarkPoints(lightInd);
+
+      int lightingCount = 0;
+      int mask = (1 << lightInd);
+      int csize = coords->size();
+
+      for (int i = 0; i < csize; i++) {
+        Coord coord = coords->at(i);
+
+        if (g_points[coord.y][coord.x] == 0) lightingCount++;
+        g_points[coord.y][coord.x] |= mask;
       }
 
       return lightingCount;
@@ -355,8 +362,7 @@ class Lighting {
           Wall beam(point, light);
           int wsize = localWallsInd.size();
           for (int i = 0; i < wsize; i++) {
-            int ind = localWallsInd[i];
-            if (beam.intersect(g_walls[ind])) {
+            if (beam.intersect(g_walls[localWallsInd[i]])) {
               ok = false;
               break;
             }
@@ -376,7 +382,7 @@ class Lighting {
 
 template<class T> void getVector(vector<T>& v) { for (int i = 0; i < v.size(); ++i) cin >> v[i];}
 int main() {
-  TIME_LIMIT = 10.0;
+  TIME_LIMIT = 2.0;
   Lighting l; int s;
   cin >> s;
   vector<string> map(s); getVector(map);
