@@ -284,13 +284,11 @@ class Lighting {
       for (int r = 0; r < S; r++) {
         for (int c = 0; c < S; c++) {
           if (g_map[r][c] == '#') continue;
+          nTotal += SCALE * SCALE;
 
           for (int x = 0; x < SCALE; x++) {
             for (int y = 0; y < SCALE; y++) {
-              nTotal++;
-              if (g_points[r*SCALE+y][c*SCALE+x] > 0) {
-                nIllum++;
-              }
+              if (g_points[r*SCALE+y][c*SCALE+x] > 0) nIllum++;
             }
           }
         }
