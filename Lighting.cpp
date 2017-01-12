@@ -19,7 +19,7 @@ const int WALL = -1;
 const bool ON = true;
 const bool OFF = false;
 int SCALE = 10;
-double TIME_LIMIT = 19.0;
+double TIME_LIMIT = 20.0;
 int g_LightDistance;
 int g_LightCount;
 int S;
