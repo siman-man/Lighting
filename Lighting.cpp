@@ -313,15 +313,16 @@ class Lighting {
       vector<Coord> coords = getMarkPoints(lightInd);
 
       int lightingCount = 0;
+      int mask = (1 << lightInd);
 
       for (int i = 0; i < coords.size(); i++) {
         Coord coord = coords[i];
 
         if (swt) {
           if (g_points[coord.y][coord.x] == 0) lightingCount++;
-          g_points[coord.y][coord.x] |= (1 << lightInd);
+          g_points[coord.y][coord.x] |= mask;
         } else {
-          g_points[coord.y][coord.x] ^= (1 << lightInd);
+          g_points[coord.y][coord.x] ^= mask;
           if (g_points[coord.y][coord.x] == 0) lightingCount++;
         }
       }
