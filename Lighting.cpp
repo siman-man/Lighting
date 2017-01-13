@@ -130,7 +130,7 @@ class Lighting {
       g_LightCount = L;
       g_map = map;
       S = map.size();
-      SCALE = ceil(sqrt(15000 / (S * S)));
+      SCALE = ceil(sqrt(10000 / (S * S)));
 
       memset(g_points, 0, sizeof(g_points));
 
@@ -237,17 +237,15 @@ class Lighting {
     }
 
     void replaceLights() {
-      vector<P> bestLights = g_lights;
-      vector<P> goodLights = g_lights;
+      P bestLights[20];
+      memcpy(bestLights, g_lights, sizeof(g_lights));
       double bestScore = calcScore();
       double goodScore = bestScore;
       double score = 0.0;
       ll tryCount = 0;
 
       double currentTime = getTime(startCycle);
-      double alpha = 0.9995;
-      double T = 10000.0;
-      double k = 10;
+      double k = 3;
       int R = 1000000;
 
       while (currentTime < TIME_LIMIT) {
@@ -260,7 +258,7 @@ class Lighting {
 
         if (bestScore < score) {
           bestScore = score;
-          bestLights = g_lights;
+          memcpy(bestLights, g_lights, sizeof(g_lights));
         }
 
         if (goodScore < score || (xor128()%R < R*exp(diffScore/(k*remainTime)))) {
@@ -271,17 +269,17 @@ class Lighting {
           markOnIlluminated(lightInd);
         }
 
-        if (tryCount % 100000 == 0) {
-          fprintf(stderr,"diff = %d, rate = %f, remainTime = %4.2f\n", diffScore, exp(diffScore/(k*remainTime)), remainTime);
-        }
 
         tryCount++;
-        T *= alpha;
         currentTime = getTime(startCycle);
+
+        if (tryCount % 100000 == 0) {
+          //fprintf(stderr,"diff = %d, rate = %f, remainTime = %4.2f\n", diffScore, exp(diffScore/(k*remainTime)), remainTime);
+        }
       }
 
       cerr << "tryCount = " << tryCount << endl;
-      g_lights = bestLights;
+      memcpy(g_lights, bestLights, sizeof(bestLights));
     }
 
     int relocationLight(int lightInd) {
