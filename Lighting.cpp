@@ -20,6 +20,8 @@ double TIME_LIMIT = 20.0;
 int g_LightDistance;
 int g_LightCount;
 int S;
+int DY[4] = {-1, 0, 1, 0};
+int DX[4] = {0, 1, 0, -1};
 
 unsigned long long xor128(){
   static unsigned long long rx=123456789, ry=362436069, rz=521288629, rw=88675123;
@@ -240,26 +242,33 @@ class Lighting {
     void replaceLights() {
       double bestScore = calcScore();
       double score = 0.0;
+      double currentTime = getTime(startCycle);
+      int diffScore;
       ll tryCount = 0;
 
-      while (true) {
+      while (currentTime < TIME_LIMIT) {
+        double remainTime = TIME_LIMIT - currentTime;
         int lightInd = xor128()%g_LightCount;
         P light = g_lights[lightInd];
 
-        int diffScore = relocationLight(lightInd);
+        if (remainTime < 2.0) {
+          diffScore = littleMove(lightInd);
+        } else {
+          diffScore = relocationLight(lightInd);
+        }
         score = bestScore + diffScore;
 
         if (bestScore < score) {
           bestScore = score;
-        } else {
+          tryCount++;
+        } else if (diffScore >= -99999){
           markOffIlluminated(lightInd);
           g_lights[lightInd] = light;
           markOnIlluminated(lightInd);
+          tryCount++;
         }
 
-        tryCount++;
-
-        if (TIME_LIMIT < getTime(startCycle)) break;
+        currentTime = getTime(startCycle);
       }
 
       cerr << "tryCount = " << tryCount << endl;
@@ -273,6 +282,24 @@ class Lighting {
       int newCount = markOnIlluminated(lightInd);
 
       return newCount - oldCount;
+    }
+
+    int littleMove(int lightInd) {
+      P *light = &g_lights[lightInd];
+
+      int i = xor128()%4;
+      int ny = light->y + DY[i];
+      int nx = light->x + DX[i];
+
+      if (ny < 0 || nx < 0 || ny >= S*SCALE || nx >= S*SCALE || g_points[ny][nx] == WALL) {
+        return -100000;
+      } else {
+        int oldCount = markOffIlluminated(lightInd);
+        light->y = ny;
+        light->x = nx;
+        int newCount = markOnIlluminated(lightInd);
+        return newCount - oldCount;
+      }
     }
 
     double calcScore() {
