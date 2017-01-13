@@ -8,7 +8,6 @@
 #include <sstream>
 #include <iomanip>
 #include <vector>
-#include <set>
 #include <string>
 
 using namespace std;
@@ -66,7 +65,7 @@ struct P {
     return P2(x-other.x) + P2(y-other.y);
   }
 
-  bool near(P &other, int d) {
+  inline bool near(P &other, int d) {
     return dist2(other) <= P2(2 * d * SCALE);
   }
 
@@ -117,8 +116,8 @@ struct Wall {
 
 ll startCycle;
 vector<Wall> g_walls;
-vector<vector<int> > g_points;
-vector<P> g_lights;
+int g_points[200][200];
+P g_lights[20];
 unordered_map<ll, vector<Coord> > g_lightMemo;
 vector<string> g_map;
 
@@ -131,10 +130,9 @@ class Lighting {
       g_LightCount = L;
       g_map = map;
       S = map.size();
-      g_lights = vector<P>(L);
       SCALE = ceil(sqrt(15000 / (S * S)));
 
-      g_points = vector<vector<int> >(S*SCALE, vector<int>(S*SCALE, 0));
+      memset(g_points, 0, sizeof(g_points));
 
       for (int r = 0; r < S; r++) {
         for (int c = 0; c < S; c++) {
