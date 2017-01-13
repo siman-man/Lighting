@@ -65,7 +65,7 @@ struct P {
     return P2(x-other.x) + P2(y-other.y);
   }
 
-  bool near(P &other, int d) {
+  inline bool near(P &other, int d) {
     return dist2(other) <= P2(2 * d * SCALE);
   }
 
