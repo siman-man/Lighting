@@ -73,7 +73,7 @@ struct P {
     return y * S*2*SCALE + x;
   }
 
-  string to_s() {
+  string toString() {
     stringstream stream;
     stream << fixed << setprecision(2) << (x/2.0/SCALE) << " " << fixed << setprecision(2) << (y/2.0/SCALE);
     return stream.str();
@@ -205,7 +205,7 @@ class Lighting {
       replaceLights();
 
       for (int i = 0; i < L; ++i) {
-        ret.push_back(g_lights[i].to_s());
+        ret.push_back(g_lights[i].toString());
       }
 
       fprintf(stderr,"score = %f\n", calcScore());
@@ -217,7 +217,7 @@ class Lighting {
       vector<string> ret;
 
       for (P p : g_lights) {
-        ret.push_back(p.to_s());
+        ret.push_back(p.toString());
       }
 
       return ret;
