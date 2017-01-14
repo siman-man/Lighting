@@ -16,7 +16,8 @@ typedef long long ll;
 const ll CYCLE_PER_SEC = 2400000000;
 const int WALL = -1;
 int SCALE = 10;
-double TIME_LIMIT = 20.6;
+double FIRST_TIME_LIMIT = 18.0;
+double SECOND_TIME_LIMIT = 20.6;
 int g_LightDistance;
 int g_LightCount;
 int S;
@@ -132,6 +133,11 @@ class Lighting {
       S = map.size();
       SCALE = ceil(sqrt(10000 / (S * S)));
 
+      cleanPoints();
+      cerr << "S = " << S << ", D = " << D << ", L = " << L << ", SCALE = " << SCALE << endl;
+    }
+
+    void cleanPoints() {
       memset(g_points, 0, sizeof(g_points));
 
       for (int r = 0; r < S; r++) {
@@ -145,8 +151,6 @@ class Lighting {
           }
         }
       }
-
-      cerr << "S = " << S << ", D = " << D << ", L = " << L << ", SCALE = " << SCALE << endl;
     }
 
     void extractWalls(vector<string> map) {
@@ -204,6 +208,13 @@ class Lighting {
 
       replaceLights();
 
+      cleanPoints();
+      for(int i = 0; i < g_LightCount; i++) {
+        markOnIlluminated(i);
+      }
+      fprintf(stderr,"score = %f\n", calcScore());
+      shakeLights();
+
       for (int i = 0; i < L; ++i) {
         ret.push_back(g_lights[i].toString());
       }
@@ -236,6 +247,16 @@ class Lighting {
       return P(getCoord(x, t1), getCoord(y, t2));
     }
 
+    P moveLittlePoint(int oy, int ox) {
+      int x, y;
+      do {
+        y = oy + (xor128()%6)-3;
+        x = ox + (xor128()%6)-3;
+      } while ((y < 0 || x < 0 || y >= S*2*SCALE || x >= S*2*SCALE));
+
+      return P(x, y);
+    }
+
     void replaceLights() {
       P bestLights[20];
       memcpy(bestLights, g_lights, sizeof(g_lights));
@@ -248,8 +269,8 @@ class Lighting {
       double k = 3;
       int R = 1000000;
 
-      while (currentTime < TIME_LIMIT) {
-        double remainTime = TIME_LIMIT - currentTime;
+      while (currentTime < FIRST_TIME_LIMIT) {
+        double remainTime = FIRST_TIME_LIMIT - currentTime;
         int lightInd = xor128()%g_LightCount;
         P light = g_lights[lightInd];
 
@@ -278,14 +299,54 @@ class Lighting {
         }
       }
 
-      cerr << "tryCount = " << tryCount << endl;
+      cerr << "1th tryCount = " << tryCount << endl;
       memcpy(g_lights, bestLights, sizeof(bestLights));
+    }
+
+    void shakeLights() {
+      double bestScore = calcScore();
+      double score = 0.0;
+      ll tryCount = 0;
+
+      double currentTime = getTime(startCycle);
+
+      while (currentTime < SECOND_TIME_LIMIT) {
+        int lightInd = xor128()%g_LightCount;
+        P light = g_lights[lightInd];
+
+        int diffScore = shakeLight(lightInd);
+        score = bestScore + diffScore;
+
+        if (bestScore < score) {
+          bestScore = score;
+        } else {
+          markOffIlluminated(lightInd);
+          g_lights[lightInd] = light;
+          markOnIlluminated(lightInd);
+        }
+
+        tryCount++;
+        currentTime = getTime(startCycle);
+      }
+
+      cerr << "2th tryCount = " << tryCount << endl;
     }
 
     int relocationLight(int lightInd) {
       int oldCount = markOffIlluminated(lightInd);
 
       g_lights[lightInd] = createRandomPoint();
+
+      int newCount = markOnIlluminated(lightInd);
+
+      return newCount - oldCount;
+    }
+
+    int shakeLight(int lightInd) {
+      int oldCount = markOffIlluminated(lightInd);
+
+      P light = g_lights[lightInd];
+      g_lights[lightInd] = moveLittlePoint(light.y, light.x);
 
       int newCount = markOnIlluminated(lightInd);
 
@@ -394,7 +455,8 @@ class Lighting {
 
 template<class T> void getVector(vector<T>& v) { for (int i = 0; i < v.size(); ++i) cin >> v[i];}
 int main() {
-  TIME_LIMIT = 10.0;
+  FIRST_TIME_LIMIT = 9.0;
+  SECOND_TIME_LIMIT = 10.0;
   Lighting l; int s;
   cin >> s;
   vector<string> map(s); getVector(map);
