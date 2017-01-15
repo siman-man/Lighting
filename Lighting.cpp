@@ -202,16 +202,13 @@ class Lighting {
         g_lights[i] = p;
       }
 
-      for (int i = 0; i < g_LightCount; i++) {
-        markOnIlluminated(i);
-      }
+      turnOnAllLights();
 
       replaceLights();
 
       cleanPoints();
-      for(int i = 0; i < g_LightCount; i++) {
-        markOnIlluminated(i);
-      }
+      turnOnAllLights();
+
       fprintf(stderr,"score = %f\n", calcScore());
       shakeLights();
 
@@ -222,6 +219,12 @@ class Lighting {
       fprintf(stderr,"score = %f\n", calcScore());
 
       return ret;
+    }
+
+    void turnOnAllLights() {
+      for(int i = 0; i < g_LightCount; i++) {
+        markOnIlluminated(i);
+      }
     }
 
     vector<string> lights2answer() {
