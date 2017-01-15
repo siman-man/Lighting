@@ -16,7 +16,7 @@ typedef long long ll;
 const ll CYCLE_PER_SEC = 2400000000;
 const int WALL = -1;
 int SCALE = 10;
-double FIRST_TIME_LIMIT = 18.0;
+double FIRST_TIME_LIMIT = 15.0;
 double SECOND_TIME_LIMIT = 20.6;
 int g_LightDistance;
 int g_LightCount;
@@ -117,7 +117,7 @@ struct Wall {
 
 ll startCycle;
 vector<Wall> g_walls;
-int g_points[200][200];
+int g_points[2000][2000];
 P g_lights[20];
 unordered_map<ll, vector<Coord> > g_lightMemo;
 vector<string> g_map;
@@ -154,6 +154,7 @@ class Lighting {
     }
 
     void extractWalls(vector<string> map) {
+      g_walls.clear();
 
       for (int i = 0; i < S-1; i++) {
         int j = 0;
@@ -203,13 +204,13 @@ class Lighting {
       }
 
       turnOnAllLights();
-
       replaceLights();
 
-      cleanPoints();
+      fprintf(stderr,"score = %f\n", calcScore());
+
+      rescalePoints(4*SCALE);
       turnOnAllLights();
 
-      fprintf(stderr,"score = %f\n", calcScore());
       shakeLights();
 
       for (int i = 0; i < L; ++i) {
@@ -219,6 +220,22 @@ class Lighting {
       fprintf(stderr,"score = %f\n", calcScore());
 
       return ret;
+    }
+
+    void rescalePoints(int scale) {
+      g_lightMemo.clear();
+
+      for(int i = 0; i < g_LightCount; i++) {
+        P light = g_lights[i];
+        int y = (light.y/2.0/SCALE) * 2.0 * scale;
+        int x = (light.x/2.0/SCALE) * 2.0 * scale;
+        g_lights[i] = P(x,y);
+      }
+
+      SCALE = scale;
+
+      extractWalls(g_map);
+      cleanPoints();
     }
 
     void turnOnAllLights() {
@@ -310,6 +327,8 @@ class Lighting {
       double bestScore = calcScore();
       double score = 0.0;
       ll tryCount = 0;
+
+      cerr << bestScore << endl;
 
       double currentTime = getTime(startCycle);
 
@@ -459,7 +478,7 @@ class Lighting {
 template<class T> void getVector(vector<T>& v) { for (int i = 0; i < v.size(); ++i) cin >> v[i];}
 int main() {
   FIRST_TIME_LIMIT = 9.0;
-  SECOND_TIME_LIMIT = 10.0;
+  SECOND_TIME_LIMIT = 20.0;
   Lighting l; int s;
   cin >> s;
   vector<string> map(s); getVector(map);
