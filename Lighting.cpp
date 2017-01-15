@@ -477,8 +477,6 @@ class Lighting {
 
 template<class T> void getVector(vector<T>& v) { for (int i = 0; i < v.size(); ++i) cin >> v[i];}
 int main() {
-  FIRST_TIME_LIMIT = 9.0;
-  SECOND_TIME_LIMIT = 20.0;
   Lighting l; int s;
   cin >> s;
   vector<string> map(s); getVector(map);
