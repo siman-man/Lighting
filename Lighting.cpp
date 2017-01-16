@@ -240,7 +240,7 @@ class Lighting {
 
     void turnOnAllLights() {
       for(int i = 0; i < g_LightCount; i++) {
-        markOnIlluminated(i);
+        turnOnIlluminated(i);
       }
     }
 
@@ -305,9 +305,9 @@ class Lighting {
         if (goodScore < score || (xor128()%R < R*exp(diffScore/(k*remainTime)))) {
           goodScore = score;
         } else {
-          markOffIlluminated(lightInd);
+          turnOffIlluminated(lightInd);
           g_lights[lightInd] = light;
-          markOnIlluminated(lightInd);
+          turnOnIlluminated(lightInd);
         }
 
 
@@ -342,9 +342,9 @@ class Lighting {
         if (bestScore < score) {
           bestScore = score;
         } else {
-          markOffIlluminated(lightInd);
+          turnOffIlluminated(lightInd);
           g_lights[lightInd] = light;
-          markOnIlluminated(lightInd);
+          turnOnIlluminated(lightInd);
         }
 
         tryCount++;
@@ -355,22 +355,22 @@ class Lighting {
     }
 
     int relocationLight(int lightInd) {
-      int oldCount = markOffIlluminated(lightInd);
+      int oldCount = turnOffIlluminated(lightInd);
 
       g_lights[lightInd] = createRandomPoint();
 
-      int newCount = markOnIlluminated(lightInd);
+      int newCount = turnOnIlluminated(lightInd);
 
       return newCount - oldCount;
     }
 
     int tweakPosition(int lightInd) {
-      int oldCount = markOffIlluminated(lightInd);
+      int oldCount = turnOffIlluminated(lightInd);
 
       P light = g_lights[lightInd];
       g_lights[lightInd] = moveLittlePoint(light.y, light.x);
 
-      int newCount = markOnIlluminated(lightInd);
+      int newCount = turnOnIlluminated(lightInd);
 
       return newCount - oldCount;
     }
@@ -395,7 +395,7 @@ class Lighting {
       return nIllum * 1.0 / nTotal;
     }
 
-    int markOffIlluminated(int lightInd) {
+    int turnOffIlluminated(int lightInd) {
       vector<Coord> *coords = getMarkPoints(lightInd);
 
       int lightingCount = 0;
@@ -412,7 +412,7 @@ class Lighting {
       return lightingCount;
     }
 
-    int markOnIlluminated(int lightInd) {
+    int turnOnIlluminated(int lightInd) {
       vector<Coord> *coords = getMarkPoints(lightInd);
 
       int lightingCount = 0;
