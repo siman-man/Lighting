@@ -132,8 +132,7 @@ class Lighting {
       extractWalls(map);
 
       for (int i = 0; i < L; ++i) {
-        P p = createRandomPoint();
-        g_lights[i] = p;
+        g_lights[i] = createRandomPoint();
       }
 
       turnOnAllLights();
