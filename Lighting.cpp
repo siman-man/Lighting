@@ -125,6 +125,36 @@ vector<string> g_map;
 
 class Lighting {
   public:
+    vector<string> setLights(vector<string> map, int D, int L) {
+      vector<string> ret;
+
+      init(map, D, L);
+      extractWalls(map);
+
+      for (int i = 0; i < L; ++i) {
+        P p = createRandomPoint();
+        g_lights[i] = p;
+      }
+
+      turnOnAllLights();
+      replaceLights();
+
+      fprintf(stderr,"score = %f\n", calcScore());
+
+      rescaleMap(4*SCALE);
+      turnOnAllLights();
+
+      tweakLightsPosition();
+
+      for (int i = 0; i < L; ++i) {
+        ret.push_back(g_lights[i].toString());
+      }
+
+      fprintf(stderr,"score = %f\n", calcScore());
+
+      return ret;
+    }
+
     void init(vector<string> map, int D, int L) {
       startCycle = getCycle();
 
@@ -190,37 +220,6 @@ class Lighting {
           g_walls.push_back(Wall(start, end));
         }
       }
-    }
-
-    vector<string> setLights(vector<string> map, int D, int L) {
-      vector<string> ret;
-
-      init(map, D, L);
-
-      extractWalls(map);
-
-      for (int i = 0; i < L; ++i) {
-        P p = createRandomPoint();
-        g_lights[i] = p;
-      }
-
-      turnOnAllLights();
-      replaceLights();
-
-      fprintf(stderr,"score = %f\n", calcScore());
-
-      rescaleMap(4*SCALE);
-      turnOnAllLights();
-
-      tweakLightsPosition();
-
-      for (int i = 0; i < L; ++i) {
-        ret.push_back(g_lights[i].toString());
-      }
-
-      fprintf(stderr,"score = %f\n", calcScore());
-
-      return ret;
     }
 
     void rescaleMap(int scale) {
