@@ -211,7 +211,7 @@ class Lighting {
       rescalePoints(4*SCALE);
       turnOnAllLights();
 
-      shakeLights();
+      tweakLightsPosition();
 
       for (int i = 0; i < L; ++i) {
         ret.push_back(g_lights[i].toString());
@@ -323,7 +323,7 @@ class Lighting {
       memcpy(g_lights, bestLights, sizeof(bestLights));
     }
 
-    void shakeLights() {
+    void tweakLightsPosition() {
       double bestScore = calcScore();
       double score = 0.0;
       ll tryCount = 0;
@@ -336,7 +336,7 @@ class Lighting {
         int lightInd = xor128()%g_LightCount;
         P light = g_lights[lightInd];
 
-        int diffScore = shakeLight(lightInd);
+        int diffScore = tweakPosition(lightInd);
         score = bestScore + diffScore;
 
         if (bestScore < score) {
@@ -364,7 +364,7 @@ class Lighting {
       return newCount - oldCount;
     }
 
-    int shakeLight(int lightInd) {
+    int tweakPosition(int lightInd) {
       int oldCount = markOffIlluminated(lightInd);
 
       P light = g_lights[lightInd];
