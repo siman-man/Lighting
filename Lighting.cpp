@@ -15,9 +15,10 @@ typedef long long ll;
 
 const ll CYCLE_PER_SEC = 2400000000;
 const int WALL = -1;
-int SCALE = 10;
 double FIRST_TIME_LIMIT = 15.0;
 double SECOND_TIME_LIMIT = 20.6;
+
+int SCALE;
 int g_LightDistance;
 int g_LightCount;
 int S;
