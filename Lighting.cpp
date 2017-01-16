@@ -208,7 +208,7 @@ class Lighting {
 
       fprintf(stderr,"score = %f\n", calcScore());
 
-      rescalePoints(4*SCALE);
+      rescaleMap(4*SCALE);
       turnOnAllLights();
 
       tweakLightsPosition();
@@ -222,7 +222,7 @@ class Lighting {
       return ret;
     }
 
-    void rescalePoints(int scale) {
+    void rescaleMap(int scale) {
       g_lightMemo.clear();
 
       for(int i = 0; i < g_LightCount; i++) {
