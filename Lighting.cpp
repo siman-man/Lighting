@@ -136,20 +136,20 @@ class Lighting {
       }
 
       turnOnAllLights();
-      replaceLights();
+      replaceLightsPosition();
 
-      fprintf(stderr,"score = %f\n", calcScore());
-
-      rescaleMap(4*SCALE);
+      rescaleMapSize(4*SCALE);
       turnOnAllLights();
 
+      fprintf(stderr,"1th score = %f\n", calcScore());
+
       tweakLightsPosition();
+
+      fprintf(stderr,"2th score = %f\n", calcScore());
 
       for (int i = 0; i < L; ++i) {
         ret.push_back(g_lights[i].toString());
       }
-
-      fprintf(stderr,"score = %f\n", calcScore());
 
       return ret;
     }
@@ -221,7 +221,7 @@ class Lighting {
       }
     }
 
-    void rescaleMap(int scale) {
+    void rescaleMapSize(int scale) {
       g_lightMemo.clear();
 
       for(int i = 0; i < g_LightCount; i++) {
@@ -276,7 +276,7 @@ class Lighting {
       return P(x, y);
     }
 
-    void replaceLights() {
+    void replaceLightsPosition() {
       P bestLights[20];
       memcpy(bestLights, g_lights, sizeof(g_lights));
       double bestScore = calcScore();
@@ -309,13 +309,8 @@ class Lighting {
           turnOnLight(lightInd);
         }
 
-
         tryCount++;
         currentTime = getTime(startCycle);
-
-        if (tryCount % 100000 == 0) {
-          //fprintf(stderr,"diff = %d, rate = %f, remainTime = %4.2f\n", diffScore, exp(diffScore/(k*remainTime)), remainTime);
-        }
       }
 
       cerr << "1th tryCount = " << tryCount << endl;
@@ -326,8 +321,6 @@ class Lighting {
       double bestScore = calcScore();
       double score = 0.0;
       ll tryCount = 0;
-
-      cerr << bestScore << endl;
 
       double currentTime = getTime(startCycle);
 
