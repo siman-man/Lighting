@@ -71,7 +71,7 @@ struct P {
     return dist2(other) <= P2(2 * d * SCALE);
   }
 
-  ll hashCode() {
+  int hashCode() {
     return y * S*2*SCALE + x;
   }
 
@@ -120,7 +120,7 @@ ll startCycle;
 vector<Wall> g_walls;
 int g_points[2000][2000];
 P g_lights[20];
-unordered_map<ll, vector<Coord> > g_lightMemo;
+unordered_map<int, vector<Coord> > g_lightMemo;
 vector<string> g_map;
 
 class Lighting {
@@ -423,9 +423,9 @@ class Lighting {
 
     vector<Coord>* getMarkPoints(int lightInd) {
       P light = g_lights[lightInd];
-      ll hashCode = light.hashCode();
+      int hashCode = light.hashCode();
 
-      if (g_lightMemo.count(light.hashCode())) return &g_lightMemo[light.hashCode()];
+      if (g_lightMemo.count(hashCode)) return &g_lightMemo[hashCode];
 
       int boxX1 = max(0, light.x - 2*SCALE*g_LightDistance);
       int boxX2 = min(2*(SCALE*S-1), light.x + 2*SCALE*g_LightDistance);
