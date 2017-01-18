@@ -269,8 +269,8 @@ class Lighting {
     P moveLittlePoint(int oy, int ox) {
       int x, y;
       do {
-        y = oy + (xor128()%6)-3;
-        x = ox + (xor128()%6)-3;
+        y = oy + (xor128()%7)-3;
+        x = ox + (xor128()%7)-3;
       } while ((y < 0 || x < 0 || y >= S*2*SCALE || x >= S*2*SCALE));
 
       return P(x, y);
